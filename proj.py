@@ -19,13 +19,17 @@ for col in columnsToRound:
 aPhiRound = filteredSheet[filteredSheet['Alpha Phi 9/18'].notna()].copy()
 nonAPhiRound = filteredSheet[filteredSheet['Alpha Phi 9/18'].isna()].copy()
 
-with pd.ExcelWriter('tabulationOutput3_918.xlsx') as writer: # CHANGE THE INDEX EACH TIME YOU RUN THE PROG
+with pd.ExcelWriter('tabulationOutput18_918.xlsx') as writer: # CHANGE THE INDEX EACH TIME YOU RUN THE PROG
     filteredSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
     aPhiRound.to_excel(writer, sheet_name='APhi Round', index=False)
-    nonAPhiRound.to_excel(writer, sheet_name='Did not go to APhi', index=False)
+    non = nonAPhiRound.drop(columns='Alpha Phi 9/18')
+    non.to_excel(writer, sheet_name='Did not go to APhi', index=False)
 
-    workboox = writer.book
-    highlightFill = PatternFill(start_color='008000', end_color='008000', fill_type="solid")
+    workbook = writer.book
+    greenFill = PatternFill(start_color='008000', end_color='008000', fill_type="solid")
+    lightGreenFill = PatternFill(start_color='C6EFCE', end_color='C6EFCE', fill_type="solid")
+    purpleFill = PatternFill(start_color='C9A0DC', end_color='C9A0DC', fill_type="solid")
+    yellowFill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type="solid")
 
     for sheetName in writer.sheets:
         worksheet = writer.sheets[sheetName]
@@ -35,10 +39,65 @@ with pd.ExcelWriter('tabulationOutput3_918.xlsx') as writer: # CHANGE THE INDEX 
                 overallColumnIndex = i + 1
                 break
 
+        aPhiColumnIndex = None
+        if sheetName == 'All Girls MasterList':
+            for i, cell in enumerate(worksheet[1]):
+                if cell.value == 'Alpha Phi 9/18':
+                    aPhiColumnIndex = i + 1
+                    break
+ 
         if overallColumnIndex:
             for row in worksheet.iter_rows(min_row = 2):
                 overallCell = row[overallColumnIndex - 1]
 
-                if overallCell.value is not None and overallCell.value >= 8:
-                    for cell in row:
-                        cell.fill = highlightFill
+                aPhiCell = None
+                if sheetName == 'All Girls MasterList' and aPhiColumnIndex:
+                    aPhiCell = row[aPhiColumnIndex - 1]
+
+                    if aPhiCell.value is None or aPhiCell.value == '':
+                        for cell in row:
+                            cell.fill = purpleFill
+
+                    elif overallCell.value is not None and overallCell.value >= 8:
+                        for cell in row:
+                            cell.fill = greenFill
+
+                    elif overallCell.value is not None and overallCell.value < 8 and overallCell.value >=6:
+                        for cell in row:
+                            cell.fill = lightGreenFill
+                    
+                    elif overallCell.value is not None and overallCell.value < 6:
+                        for cell in row:
+                            cell.fill = yellowFill
+
+                if sheetName == 'APhi Round':
+                    if overallCell.value is not None and overallCell.value >= 8:
+                        for cell in row:
+                            cell.fill = greenFill
+
+                    elif overallCell.value is not None and overallCell.value < 8 and overallCell.value >=6:
+                        for cell in row:
+                            cell.fill = lightGreenFill
+                    
+                    elif overallCell.value is not None and overallCell.value < 6:
+                        for cell in row:
+                            cell.fill = yellowFill 
+
+                if sheetName == 'Did not go to APhi':
+                    if overallCell.value is not None and overallCell.value >= 8:
+                        for cell in row:
+                            cell.fill = greenFill
+
+                    elif overallCell.value is not None and overallCell.value < 8 and overallCell.value >=6:
+                        for cell in row:
+                            cell.fill = lightGreenFill
+                    
+                    elif overallCell.value is not None and overallCell.value < 6:
+                        for cell in row:
+                            cell.fill = yellowFill 
+
+                
+
+                
+
+print("✅ Script finished. Check the new Excel file.")
