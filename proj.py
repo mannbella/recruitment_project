@@ -32,7 +32,7 @@ def filling(overallcell):
         for cell in row:
             cell.fill = yellowFill 
 
-with pd.ExcelWriter('tabulationOutput18_918.xlsx') as writer: # CHANGE THE INDEX EACH TIME YOU RUN THE PROG
+with pd.ExcelWriter('tabulationOutput2_919.xlsx') as writer: # CHANGE THE INDEX EACH TIME YOU RUN THE PROG
     filteredSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
     aPhiRound.to_excel(writer, sheet_name='APhi Round', index=False)
     non = nonAPhiRound.drop(columns='Alpha Phi 9/18')
@@ -71,7 +71,17 @@ with pd.ExcelWriter('tabulationOutput18_918.xlsx') as writer: # CHANGE THE INDEX
                         for cell in row:
                             cell.fill = purpleFill
 
-                    filling(overallCell)
+                    elif overallCell.value is not None and overallCell.value >= 8:
+                        for cell in row:
+                            cell.fill = greenFill
+
+                    elif overallCell.value is not None and overallCell.value < 8 and overallCell.value >=6:
+                        for cell in row:
+                            cell.fill = lightGreenFill
+                    
+                    elif overallCell.value is not None and overallCell.value < 6:
+                        for cell in row:
+                            cell.fill = yellowFill 
 
                 if sheetName == 'APhi Round':
                     filling(overallCell)
