@@ -19,6 +19,19 @@ for col in columnsToRound:
 aPhiRound = filteredSheet[filteredSheet['Alpha Phi 9/18'].notna()].copy()
 nonAPhiRound = filteredSheet[filteredSheet['Alpha Phi 9/18'].isna()].copy()
 
+def filling(overallcell):
+    if overallcell.value is not None and overallcell.value >= 8:
+        for cell in row:
+            cell.fill = greenFill
+
+    elif overallcell.value is not None and overallcell.value < 8 and overallcell.value >=6:
+        for cell in row:
+            cell.fill = lightGreenFill
+    
+    elif overallcell.value is not None and overallcell.value < 6:
+        for cell in row:
+            cell.fill = yellowFill 
+
 with pd.ExcelWriter('tabulationOutput18_918.xlsx') as writer: # CHANGE THE INDEX EACH TIME YOU RUN THE PROG
     filteredSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
     aPhiRound.to_excel(writer, sheet_name='APhi Round', index=False)
@@ -58,43 +71,13 @@ with pd.ExcelWriter('tabulationOutput18_918.xlsx') as writer: # CHANGE THE INDEX
                         for cell in row:
                             cell.fill = purpleFill
 
-                    elif overallCell.value is not None and overallCell.value >= 8:
-                        for cell in row:
-                            cell.fill = greenFill
-
-                    elif overallCell.value is not None and overallCell.value < 8 and overallCell.value >=6:
-                        for cell in row:
-                            cell.fill = lightGreenFill
-                    
-                    elif overallCell.value is not None and overallCell.value < 6:
-                        for cell in row:
-                            cell.fill = yellowFill
+                    filling(overallCell)
 
                 if sheetName == 'APhi Round':
-                    if overallCell.value is not None and overallCell.value >= 8:
-                        for cell in row:
-                            cell.fill = greenFill
-
-                    elif overallCell.value is not None and overallCell.value < 8 and overallCell.value >=6:
-                        for cell in row:
-                            cell.fill = lightGreenFill
-                    
-                    elif overallCell.value is not None and overallCell.value < 6:
-                        for cell in row:
-                            cell.fill = yellowFill 
+                    filling(overallCell)
 
                 if sheetName == 'Did not go to APhi':
-                    if overallCell.value is not None and overallCell.value >= 8:
-                        for cell in row:
-                            cell.fill = greenFill
-
-                    elif overallCell.value is not None and overallCell.value < 8 and overallCell.value >=6:
-                        for cell in row:
-                            cell.fill = lightGreenFill
-                    
-                    elif overallCell.value is not None and overallCell.value < 6:
-                        for cell in row:
-                            cell.fill = yellowFill 
+                    filling(overallCell)
 
                 
 
