@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 from openpyxl.styles import PatternFill
 
-# --- Data Loading and Cleaning ---
-tabulationSheetOne = pd.read_csv('results_report (5).csv')
+tabulationSheetOne = pd.read_csv('results_report (6).csv')
 tabulationSheetOne.columns = tabulationSheetOne.columns.str.strip()
 tabulationSheetOneFixed = tabulationSheetOne.drop('List', axis=1, errors='ignore')
 
@@ -13,7 +12,6 @@ columnsToRound = ['Overall', 'AOII Interest (0 - Standard Round)', 'Ambition (0 
 existingColumnsToKeep = [col for col in columnsToKeep if col in tabulationSheetOneFixed.columns]
 newSheet = tabulationSheetOneFixed[existingColumnsToKeep].copy()
 
-# Convert score columns to numeric type
 for col in columnsToRound:
     if col in newSheet.columns:
         newSheet[col] = pd.to_numeric(newSheet[col], errors='coerce')
@@ -21,7 +19,6 @@ for col in columnsToRound:
 filteredSheet = newSheet[newSheet['Overall'].notna() & (newSheet['Overall'] != 0)].copy()
 filteredSheet = filteredSheet.sort_values(by='Overall', ascending=False)
 
-# --- Data Processing ---
 for col in columnsToRound:
     if col in filteredSheet.columns:
         filteredSheet[col] = filteredSheet[col].apply(lambda x: np.sign(x) * np.floor(np.abs(x) + 0.5) if pd.notna(x) else x)
@@ -36,15 +33,13 @@ if 'House Tours 9/19' in filteredSheet.columns:
 else:
     houseToursRound = pd.DataFrame()
 
-# --- Writing to Excel with Formatting ---
-with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer:
+with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer: # CHANGE INDEX EVERY TIME PROG RUNS
     filteredSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
     if not aPhiRound.empty:
         aPhiRound.to_excel(writer, sheet_name='APhi Round', index=False)
     if not houseToursRound.empty:
         houseToursRound.to_excel(writer, sheet_name='House Tours Round', index=False)
 
-    # --- Define Fills ---
     workbook = writer.book
     greenFill = PatternFill(start_color='C6EFCE', end_color='C6EFCE', fill_type="solid")
     lightGreenFill = PatternFill(start_color='E2F0D9', end_color='E2F0D9', fill_type="solid")
@@ -52,7 +47,6 @@ with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer:
     yellowFill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type="solid")
     redFill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type="solid")
 
-    # --- Main Formatting Loop ---
     for sheetName in writer.sheets:
         worksheet = writer.sheets[sheetName]
         
@@ -76,7 +70,6 @@ with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer:
                     except (ValueError, TypeError):
                         continue
 
-                # LOGIC FOR THE MASTER LIST
                 if sheetName == 'All Girls MasterList':
                     if aPhiCol is not None and houseToursCol is not None:
                         aPhiCell = row[aPhiCol]
@@ -88,8 +81,6 @@ with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer:
                             for cell in row: cell.fill = redFill
                         elif isAPhiEmpty or isHouseTourEmpty:
                             for cell in row: cell.fill = purpleFill
-                        # <-- FIX: This 'else' block applies the score-based colors
-                        # to the remaining girls on the MasterList.
                         else:
                             if score >= 8:
                                 for cell in row: cell.fill = greenFill
@@ -98,7 +89,6 @@ with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer:
                             elif score < 6:
                                 for cell in row: cell.fill = yellowFill
                 
-                # LOGIC FOR THE OTHER SHEETS
                 else:
                     if score >= 8:
                         for cell in row: cell.fill = greenFill
@@ -107,4 +97,4 @@ with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer:
                     elif score < 6:
                         for cell in row: cell.fill = yellowFill
 
-print("✅ Script finished. The MasterList should now be fully highlighted.")
+print("✅ Script finished.")
