@@ -6,8 +6,8 @@ tabulationSheetOne = pd.read_csv('results_report (6).csv')
 tabulationSheetOne.columns = tabulationSheetOne.columns.str.strip()
 tabulationSheetOneFixed = tabulationSheetOne.drop('List', axis=1, errors='ignore')
 
-columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0 - Standard Round)', 'Ambition (0 - Standard Round)', 'Likability (0 - Standard Round)', 'Alpha Phi 9/18', 'House Tours 9/19']
-columnsToRound = ['Overall', 'AOII Interest (0 - Standard Round)', 'Ambition (0 - Standard Round)', 'Likability (0 - Standard Round)', 'Alpha Phi 9/18', 'House Tours 9/19']
+columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood Day 1']
+columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood Day 1']
 
 existingColumnsToKeep = [col for col in columnsToKeep if col in tabulationSheetOneFixed.columns]
 newSheet = tabulationSheetOneFixed[existingColumnsToKeep].copy()
@@ -23,22 +23,22 @@ for col in columnsToRound:
     if col in filteredSheet.columns:
         filteredSheet[col] = filteredSheet[col].apply(lambda x: np.sign(x) * np.floor(np.abs(x) + 0.5) if pd.notna(x) else x)
 
-if 'Alpha Phi 9/18' in filteredSheet.columns:
-    aPhiRound = filteredSheet[filteredSheet['Alpha Phi 9/18'].notna()].copy()
+if 'Sisterhood Day 1' in filteredSheet.columns:
+    sisterhoodRoundOne = filteredSheet[filteredSheet['Sisterhood Day 1'].notna()].copy()
 else:
-    aPhiRound = pd.DataFrame()
+    sisterhoodRoundOne = pd.DataFrame()
 
-if 'House Tours 9/19' in filteredSheet.columns:
-    houseToursRound = filteredSheet[filteredSheet['House Tours 9/19'].notna()].copy()
-else:
-    houseToursRound = pd.DataFrame()
+#if 'House Tours 9/19' in filteredSheet.columns:
+#    houseToursRound = filteredSheet[filteredSheet['House Tours 9/19'].notna()].copy()
+#else:
+#    houseToursRound = pd.DataFrame()
 
-with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer: # CHANGE INDEX EVERY TIME PROG RUNS
+with pd.ExcelWriter('sisterhoodDayOne_Group1.xlsx', engine='openpyxl') as writer: # CHANGE INDEX EVERY TIME PROG RUNS
     filteredSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
-    if not aPhiRound.empty:
-        aPhiRound.to_excel(writer, sheet_name='APhi Round', index=False)
-    if not houseToursRound.empty:
-        houseToursRound.to_excel(writer, sheet_name='House Tours Round', index=False)
+    if not sisterhoodRoundOne.empty:
+        sisterhoodRoundOne.to_excel(writer, sheet_name='Sisterhood Round 1', index=False)
+    #if not houseToursRound.empty:
+    #    houseToursRound.to_excel(writer, sheet_name='House Tours Round', index=False)
 
     workbook = writer.book
     greenFill = PatternFill(start_color='C6EFCE', end_color='C6EFCE', fill_type="solid")
@@ -51,12 +51,12 @@ with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer: 
         worksheet = writer.sheets[sheetName]
         
         headers = [cell.value for cell in worksheet[1]]
-        overallCol, aPhiCol, houseToursCol = None, None, None
+        overallCol, sisterhoodCol1 = None, None
         
         try:
             overallCol = headers.index('Overall')
-            if 'Alpha Phi 9/18' in headers: aPhiCol = headers.index('Alpha Phi 9/18')
-            if 'House Tours 9/19' in headers: houseToursCol = headers.index('House Tours 9/19')
+            if 'Sisterhood Day 1' in headers: aPhiCol = headers.index('Sisterhood Day 1')
+            #if 'House Tours 9/19' in headers: houseToursCol = headers.index('House Tours 9/19')
         except ValueError:
             continue
 
@@ -71,16 +71,16 @@ with pd.ExcelWriter('tabulationOutput9_919.xlsx', engine='openpyxl') as writer: 
                         continue
 
                 if sheetName == 'All Girls MasterList':
-                    if aPhiCol is not None and houseToursCol is not None:
-                        aPhiCell = row[aPhiCol]
-                        houseTourCell = row[houseToursCol]
-                        isAPhiEmpty = aPhiCell.value is None or aPhiCell.value == ''
-                        isHouseTourEmpty = houseTourCell.value is None or houseTourCell.value == ''
+                    if sisterhoodCol1 is not None:
+                        sisterhood1Cell = row[sisterhoodCol1]
+                        #houseTourCell = row[houseToursCol]
+                        isSisterhoodEmpty = sisterhood1Cell.value is None or sisterhood1Cell.value == ''
+                        #isHouseTourEmpty = houseTourCell.value is None or houseTourCell.value == ''
 
-                        if isAPhiEmpty and isHouseTourEmpty:
+                        if isSisterhoodEmpty:
                             for cell in row: cell.fill = redFill
-                        elif isAPhiEmpty or isHouseTourEmpty:
-                            for cell in row: cell.fill = purpleFill
+                        #elif isAPhiEmpty or isHouseTourEmpty:
+                        #    for cell in row: cell.fill = purpleFill
                         else:
                             if score >= 8:
                                 for cell in row: cell.fill = greenFill
