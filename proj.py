@@ -2,9 +2,25 @@ import pandas as pd
 import numpy as np
 from openpyxl.styles import PatternFill
 
-tabulationSheetOne = pd.read_csv('results_report.csv')
+tabulationSheetOne = pd.read_csv('results_report (6).csv')
+commentsSheet = pd.read_csv('raw_scores_report (5).csv')
 tabulationSheetOne.columns = tabulationSheetOne.columns.str.strip()
 tabulationSheetOneFixed = tabulationSheetOne.drop('List', axis=1, errors='ignore')
+
+keyColumns = ['First Name', 'Last Name']
+commentColumnName = 'Comment'
+
+commentsSubset = commentsSheet[keyColumns + [commentColumnName]]
+commentsSubset['comment_num'] = commentsSubset.groupby(keyColumns).cumcount() + 1
+
+commentsPivot = commentsSubset.pivot_table(
+    index = keyColumns,
+    columns = 'comment_num',
+    values = commentColumnName,
+    aggfunc = 'first'
+).reset_index()
+
+commentsPivot.columns = [f'Comment {col}' if isinstance(col, int) else col for col in commentsPivot.columns]
 
 columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood Day 1']
 columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood Day 1']
@@ -33,10 +49,15 @@ else:
 #else:
 #    houseToursRound = pd.DataFrame()
 
-with pd.ExcelWriter('sisterhoodDayOne_Group1.xlsx', engine='openpyxl') as writer: # CHANGE INDEX EVERY TIME PROG RUNS
-    filteredSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
-    if not sisterhoodRoundOne.empty:
-        sisterhoodRoundOne.to_excel(writer, sheet_name='Sisterhood Round 1', index=False)
+mergedSheet = pd.merge(
+    filteredSheet,
+    commentsPivot,
+    on = keyColumns,
+    how = 'left'
+)
+
+with pd.ExcelWriter('sisterhoodDayOne_HalfPoint.xlsx', engine='openpyxl') as writer: # CHANGE INDEX EVERY TIME PROG RUNS
+    mergedSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
     #if not houseToursRound.empty:
     #    houseToursRound.to_excel(writer, sheet_name='House Tours Round', index=False)
 
