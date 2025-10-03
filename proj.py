@@ -2,120 +2,100 @@ import pandas as pd
 import numpy as np
 from openpyxl.styles import PatternFill
 
+# --- 1. Data Loading and Cleaning ---
 tabulationSheetOne = pd.read_csv('results_report (6).csv')
 commentsSheet = pd.read_csv('raw_scores_report (5).csv')
 tabulationSheetOne.columns = tabulationSheetOne.columns.str.strip()
 tabulationSheetOneFixed = tabulationSheetOne.drop('List', axis=1, errors='ignore')
 
+# --- 2. Comments Processing ---
 keyColumns = ['First Name', 'Last Name']
 commentColumnName = 'Comment'
 
-commentsSubset = commentsSheet[keyColumns + [commentColumnName]]
-commentsSubset['comment_num'] = commentsSubset.groupby(keyColumns).cumcount() + 1
+if all(col in commentsSheet.columns for col in keyColumns + [commentColumnName]):
+    commentsSubset = commentsSheet[keyColumns + [commentColumnName]].copy()
+    for col in keyColumns:
+        commentsSubset[col] = commentsSubset[col].astype(str).str.strip()
+    
+    commentsSubset['comment_num'] = commentsSubset.groupby(keyColumns).cumcount() + 1
+    commentsPivot = commentsSubset.pivot_table(
+        index=keyColumns, columns='comment_num', values=commentColumnName, aggfunc='first'
+    ).reset_index()
+    commentsPivot.columns = [f'Comment {col}' if isinstance(col, int) else col for col in commentsPivot.columns]
+else:
+    commentsPivot = pd.DataFrame(columns=keyColumns)
 
-commentsPivot = commentsSubset.pivot_table(
-    index = keyColumns,
-    columns = 'comment_num',
-    values = commentColumnName,
-    aggfunc = 'first'
-).reset_index()
-
-commentsPivot.columns = [f'Comment {col}' if isinstance(col, int) else col for col in commentsPivot.columns]
-
+# --- 3. Main Data Processing ---
 columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood Day 1']
-columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood Day 1']
-
 existingColumnsToKeep = [col for col in columnsToKeep if col in tabulationSheetOneFixed.columns]
 newSheet = tabulationSheetOneFixed[existingColumnsToKeep].copy()
 
+columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood Day 1']
 for col in columnsToRound:
     if col in newSheet.columns:
         newSheet[col] = pd.to_numeric(newSheet[col], errors='coerce')
 
+# <-- FIX: Re-introduce the filter to only keep girls with a valid 'Overall' score.
 filteredSheet = newSheet[newSheet['Overall'].notna() & (newSheet['Overall'] != 0)].copy()
 filteredSheet = filteredSheet.sort_values(by='Overall', ascending=False)
 
+# Apply rounding to the filtered data
 for col in columnsToRound:
     if col in filteredSheet.columns:
         filteredSheet[col] = filteredSheet[col].apply(lambda x: np.sign(x) * np.floor(np.abs(x) + 0.5) if pd.notna(x) else x)
 
-if 'Sisterhood Day 1' in filteredSheet.columns:
-    sisterhoodRoundOne = filteredSheet[filteredSheet['Sisterhood Day 1'].notna()].copy()
+# <-- FIX: Merge comments into the *filtered* sheet, not the complete list.
+mergedSheet = pd.merge(filteredSheet, commentsPivot, on=keyColumns, how='left')
+
+# Create the 'Sisterhood' sheet from the already filtered and merged data
+if 'Sisterhood Day 1' in mergedSheet.columns:
+    sisterhoodRoundOne = mergedSheet[mergedSheet['Sisterhood Day 1'].notna()].copy()
 else:
     sisterhoodRoundOne = pd.DataFrame()
 
-#if 'House Tours 9/19' in filteredSheet.columns:
-#    houseToursRound = filteredSheet[filteredSheet['House Tours 9/19'].notna()].copy()
-#else:
-#    houseToursRound = pd.DataFrame()
-
-mergedSheet = pd.merge(
-    filteredSheet,
-    commentsPivot,
-    on = keyColumns,
-    how = 'left'
-)
-
-with pd.ExcelWriter('sisterhoodDayOne_HalfPoint.xlsx', engine='openpyxl') as writer: # CHANGE INDEX EVERY TIME PROG RUNS
+# --- 4. Writing to Excel with Formatting ---
+with pd.ExcelWriter('sisterhoodDayOne_1.xlsx', engine='openpyxl') as writer:
+    # The mergedSheet is now the correct, filtered list
     mergedSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
-    #if not houseToursRound.empty:
-    #    houseToursRound.to_excel(writer, sheet_name='House Tours Round', index=False)
+    
+    if not sisterhoodRoundOne.empty:
+        sisterhoodRoundOne.to_excel(writer, sheet_name='Sisterhood Day 1', index=False)
 
+    # --- (The rest of the formatting code remains the same) ---
     workbook = writer.book
     greenFill = PatternFill(start_color='C6EFCE', end_color='C6EFCE', fill_type="solid")
     lightGreenFill = PatternFill(start_color='E2F0D9', end_color='E2F0D9', fill_type="solid")
-    purpleFill = PatternFill(start_color='C9A0DC', end_color='C9A0DC', fill_type="solid")
     yellowFill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type="solid")
-    redFill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type="solid")
+    redFill = PatternFill(start_color='FFC7CE', end_color='FFC7CE', fill_type="solid")
 
     for sheetName in writer.sheets:
         worksheet = writer.sheets[sheetName]
-        
         headers = [cell.value for cell in worksheet[1]]
-        overallCol, sisterhoodCol1 = None, None
-        
         try:
             overallCol = headers.index('Overall')
-            if 'Sisterhood Day 1' in headers: sisterhoodCol1 = headers.index('Sisterhood Day 1')
-            #if 'House Tours 9/19' in headers: houseToursCol = headers.index('House Tours 9/19')
+            sisterhoodCol1 = headers.index('Sisterhood Day 1') if 'Sisterhood Day 1' in headers else -1
         except ValueError:
             continue
 
-        if overallCol is not None:
-            for row in worksheet.iter_rows(min_row=2):
-                overallCell = row[overallCol]
-                score = 0
-                if overallCell.value is not None:
-                    try:
-                        score = float(overallCell.value)
-                    except (ValueError, TypeError):
-                        continue
+        for row in worksheet.iter_rows(min_row=2):
+            overallCell = row[overallCol]
+            score = 0
+            if overallCell.value is not None:
+                try: score = float(overallCell.value)
+                except (ValueError, TypeError): score = 0
 
-                if sheetName == 'All Girls MasterList':
-                    if sisterhoodCol1 is not None:
-                        sisterhood1Cell = row[sisterhoodCol1]
-                        #houseTourCell = row[houseToursCol]
-                        isSisterhoodEmpty = sisterhood1Cell.value is None or sisterhood1Cell.value == ''
-                        #isHouseTourEmpty = houseTourCell.value is None or houseTourCell.value == ''
+            if sheetName == 'All Girls MasterList' and sisterhoodCol1 != -1:
+                sisterhood1Cell = row[sisterhoodCol1]
+                isSisterhoodEmpty = sisterhood1Cell.value is None or sisterhood1Cell.value == ''
+                if isSisterhoodEmpty:
+                    for cell in row: cell.fill = redFill
+                    continue
 
-                        if isSisterhoodEmpty:
-                            for cell in row: cell.fill = redFill
-                        #elif isAPhiEmpty or isHouseTourEmpty:
-                        #    for cell in row: cell.fill = purpleFill
-                        else:
-                            if score >= 8:
-                                for cell in row: cell.fill = greenFill
-                            elif 6 <= score < 8:
-                                for cell in row: cell.fill = lightGreenFill
-                            elif score < 6:
-                                for cell in row: cell.fill = yellowFill
-                
-                    else:
-                        if score >= 8:
-                            for cell in row: cell.fill = greenFill
-                        elif 6 <= score < 8:
-                            for cell in row: cell.fill = lightGreenFill
-                        elif score < 6:
-                            for cell in row: cell.fill = yellowFill
+            if score >= 8:
+                for cell in row: cell.fill = greenFill
+            elif 6 <= score < 8:
+                for cell in row: cell.fill = lightGreenFill
+            elif score > 0 and score < 6:
+                for cell in row: cell.fill = yellowFill
 
-print("✅ Script finished.")
+print("✅ Script finished")
