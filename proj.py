@@ -22,11 +22,15 @@ commentsPivot = commentsSubset.pivot_table(
 
 commentsPivot.columns = [f'Comment {col}' if isinstance(col, int) else col for col in commentsPivot.columns]
 
-columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood Day 1']
-columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood Day 1']
+columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood']
+columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood']
 
 existingColumnsToKeep = [col for col in columnsToKeep if col in tabulationSheetOneFixed.columns]
 newSheet = tabulationSheetOneFixed[existingColumnsToKeep].copy()
+
+for col in columnsToRound:
+    if col in newSheet.columns:
+        newSheet[col] = newSheet[col].apply(lambda x: np.sign(x) * np.floor(np.abs(x) + 0.5) if pd.notna(x) else x)
 
 for col in columnsToRound:
     if col in newSheet.columns:
@@ -35,12 +39,8 @@ for col in columnsToRound:
 filteredSheet = newSheet[newSheet['Overall'].notna() & (newSheet['Overall'] != 0)].copy()
 filteredSheet = filteredSheet.sort_values(by='Overall', ascending=False)
 
-for col in columnsToRound:
-    if col in filteredSheet.columns:
-        filteredSheet[col] = filteredSheet[col].apply(lambda x: np.sign(x) * np.floor(np.abs(x) + 0.5) if pd.notna(x) else x)
-
-if 'Sisterhood Day 1' in filteredSheet.columns:
-    sisterhoodRoundOne = filteredSheet[filteredSheet['Sisterhood Day 1'].notna()].copy()
+if 'Sisterhood' in filteredSheet.columns:
+    sisterhoodRoundOne = filteredSheet[filteredSheet['Sisterhood'].notna()].copy()
 else:
     sisterhoodRoundOne = pd.DataFrame()
 
@@ -56,8 +56,9 @@ mergedSheet = pd.merge(
     how = 'left'
 )
 
-with pd.ExcelWriter('sisterhoodDayOne_HalfPoint1.xlsx', engine='openpyxl') as writer: # CHANGE INDEX EVERY TIME PROG RUNS
-    mergedSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
+with pd.ExcelWriter('sisterhoodDayOne_HalfPoint9.xlsx', engine='openpyxl') as writer: # CHANGE INDEX EVERY TIME PROG RUNS
+    mergedSheet.to_excel(writer, sheet_name="Sisterhood", index=False)
+    newSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
     #if not houseToursRound.empty:
     #    houseToursRound.to_excel(writer, sheet_name='House Tours Round', index=False)
 
@@ -67,6 +68,7 @@ with pd.ExcelWriter('sisterhoodDayOne_HalfPoint1.xlsx', engine='openpyxl') as wr
     purpleFill = PatternFill(start_color='C9A0DC', end_color='C9A0DC', fill_type="solid")
     yellowFill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type="solid")
     redFill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type="solid")
+    whiteFill = PatternFill(start_color='FFFFFF', end_color='FFFFFF', fill_type="solid")
 
     for sheetName in writer.sheets:
         worksheet = writer.sheets[sheetName]
@@ -76,7 +78,7 @@ with pd.ExcelWriter('sisterhoodDayOne_HalfPoint1.xlsx', engine='openpyxl') as wr
 
         try:
             overallCol = headers.index('Overall')
-            if 'Sisterhood Day 1' in headers: sisterhoodCol1 = headers.index('Sisterhood Day 1')
+            if 'Sisterhood' in headers: sisterhoodCol1 = headers.index('Sisterhood')
             #if 'House Tours 9/19' in headers: houseToursCol = headers.index('House Tours 9/19')
         except ValueError:
             continue
@@ -85,13 +87,14 @@ with pd.ExcelWriter('sisterhoodDayOne_HalfPoint1.xlsx', engine='openpyxl') as wr
             for row in worksheet.iter_rows(min_row=2):
                 overallCell = row[overallCol]
                 score = 0
+
                 if overallCell.value is not None:
                     try:
                         score = float(overallCell.value)
                     except (ValueError, TypeError):
                         continue
 
-                if sheetName == 'All Girls MasterList':
+                if sheetName == 'Sisterhood':
                     if sisterhoodCol1 is not None:
                         sisterhood1Cell = row[sisterhoodCol1]
                         #houseTourCell = row[houseToursCol]
@@ -117,5 +120,15 @@ with pd.ExcelWriter('sisterhoodDayOne_HalfPoint1.xlsx', engine='openpyxl') as wr
                             for cell in row: cell.fill = lightGreenFill
                         elif score < 6:
                             for cell in row: cell.fill = yellowFill
+
+                if sheetName == 'All Girls MasterList':
+                    if score >= 8:
+                        for cell in row: cell.fill = greenFill
+                    elif 6 <= score < 8:
+                        for cell in row: cell.fill = lightGreenFill
+                    elif 0 < score < 6:
+                        for cell in row: cell.fill = yellowFill
+                    elif score == 0:
+                        for cell in row: cell.fill = whiteFill
 
 print("✅ Script finished")
