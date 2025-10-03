@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from openpyxl.styles import PatternFill
 
-tabulationSheetOne = pd.read_csv('results_report (6).csv')
+tabulationSheetOne = pd.read_csv('results_report.csv')
 tabulationSheetOne.columns = tabulationSheetOne.columns.str.strip()
 tabulationSheetOneFixed = tabulationSheetOne.drop('List', axis=1, errors='ignore')
 
@@ -55,7 +55,7 @@ with pd.ExcelWriter('sisterhoodDayOne_Group1.xlsx', engine='openpyxl') as writer
         
         try:
             overallCol = headers.index('Overall')
-            if 'Sisterhood Day 1' in headers: aPhiCol = headers.index('Sisterhood Day 1')
+            if 'Sisterhood Day 1' in headers: sisterhoodCol1 = headers.index('Sisterhood Day 1')
             #if 'House Tours 9/19' in headers: houseToursCol = headers.index('House Tours 9/19')
         except ValueError:
             continue
@@ -89,12 +89,12 @@ with pd.ExcelWriter('sisterhoodDayOne_Group1.xlsx', engine='openpyxl') as writer
                             elif score < 6:
                                 for cell in row: cell.fill = yellowFill
                 
-                else:
-                    if score >= 8:
-                        for cell in row: cell.fill = greenFill
-                    elif 6 <= score < 8:
-                        for cell in row: cell.fill = lightGreenFill
-                    elif score < 6:
-                        for cell in row: cell.fill = yellowFill
+                    else:
+                        if score >= 8:
+                            for cell in row: cell.fill = greenFill
+                        elif 6 <= score < 8:
+                            for cell in row: cell.fill = lightGreenFill
+                        elif score < 6:
+                            for cell in row: cell.fill = yellowFill
 
 print("✅ Script finished.")
