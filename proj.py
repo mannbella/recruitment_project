@@ -22,8 +22,8 @@ commentsPivot = commentsSubset.pivot_table(
 
 commentsPivot.columns = [f'Comment {col}' if isinstance(col, int) else col for col in commentsPivot.columns]
 
-columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Pool']
-columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood']
+columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy', 'Pool']
+columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy']
 
 existingColumnsToKeep = [col for col in columnsToKeep if col in tabulationSheetOneFixed.columns]
 newSheet = tabulationSheetOneFixed[existingColumnsToKeep].copy()
@@ -44,11 +44,6 @@ if 'Sisterhood' in filteredSheet.columns:
 else:
     sisterhoodRoundOne = pd.DataFrame()
 
-#if 'House Tours 9/19' in filteredSheet.columns:
-#    houseToursRound = filteredSheet[filteredSheet['House Tours 9/19'].notna()].copy()
-#else:
-#    houseToursRound = pd.DataFrame()
-
 mergedSheet = pd.merge( # merges filtered and commented sheet to get all filtered cols but add comments
     filteredSheet,
     commentsPivot,
@@ -56,29 +51,31 @@ mergedSheet = pd.merge( # merges filtered and commented sheet to get all filtere
     how = 'left'
 )
 
-primary_master_list = mergedSheet[newSheet['Pool'] == 'Primary'].copy()
-secondary_master_list = mergedSheet[newSheet['Pool'] == 'Secondary'].copy()
-
 sisterhood_primary = pd.DataFrame()
 sisterhood_secondary = pd.DataFrame()
+philanthropyPrimary = pd.DataFrame()
+philantrhopySecondary = pd.DataFrame()
+
 if 'Sisterhood' in mergedSheet.columns and 'Pool' in mergedSheet.columns:
-    # Filter for girls who attended the Sisterhood round
     sisterhood_all = mergedSheet[mergedSheet['Sisterhood'].notna()].copy()
-    # Split the attended list into Primary and Secondary
     sisterhood_primary = sisterhood_all[sisterhood_all['Pool'] == 'Primary'].copy()
     sisterhood_secondary = sisterhood_all[sisterhood_all['Pool'] == 'Secondary'].copy()
 
-with pd.ExcelWriter('sisterhoodRound.xlsx', engine='openpyxl') as writer: # CHANGE BASED ON ROUND
-    #mergedSheet.to_excel(writer, sheet_name="Sisterhood", index=False)
+if 'Philanthropy' in mergedSheet.columns and 'Pool' in mergedSheet.columns:
+    philanthropyAll = mergedSheet[mergedSheet['Sisterhood'].notna()].copy()
+    philanthropyPrimary = philanthropyAll[philanthropyAll['Pool']== 'Primary'].copy()
+    philantrhopySecondary = philanthropyAll[philanthropyAll['Pool']== 'Secondary'].copy
+
+with pd.ExcelWriter('PhilanthropyRound.xlsx', engine='openpyxl') as writer: # CHANGE BASED ON ROUND
     newSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
-    primary_master_list.to_excel(writer, sheet_name='Primary MasterList', index=False)
-    secondary_master_list.to_excel(writer, sheet_name='Secondary MasterList', index=False)
-    #if not houseToursRound.empty:
-    #    houseToursRound.to_excel(writer, sheet_name='House Tours Round', index=False)
     if not sisterhood_primary.empty:
         sisterhood_primary.to_excel(writer, sheet_name='Sisterhood Primary', index=False)
     if not sisterhood_secondary.empty:
         sisterhood_secondary.to_excel(writer, sheet_name='Sisterhood Secondary', index=False)
+    if not philanthropyPrimary.empty:
+        philanthropyPrimary.to_excel(writer, sheet_name='Philanthropy Primary', index=False)
+    if not philantrhopySecondary.empty:
+        philantrhopySecondary.to_excel(writer, sheet_name='Secondary', index=False)
 
 
     workbook = writer.book
@@ -93,12 +90,12 @@ with pd.ExcelWriter('sisterhoodRound.xlsx', engine='openpyxl') as writer: # CHAN
         worksheet = writer.sheets[sheetName]
 
         headers = [cell.value for cell in worksheet[1]]
-        overallCol, sisterhoodCol1 = None, None
+        overallCol, sisterhoodCol, philoCol = None, None, None
 
         try:
             overallCol = headers.index('Overall')
-            if 'Sisterhood' in headers: sisterhoodCol1 = headers.index('Sisterhood')
-            #if 'House Tours 9/19' in headers: houseToursCol = headers.index('House Tours 9/19')
+            if 'Sisterhood' in headers: sisterhoodCol = headers.index('Sisterhood')
+            if 'Philanthropy' in headers: philoCol = headers.index('Philanthropy')
         except ValueError:
             continue
 
@@ -114,16 +111,27 @@ with pd.ExcelWriter('sisterhoodRound.xlsx', engine='openpyxl') as writer: # CHAN
                         continue
 
                 if sheetName == 'Sisterhood Primary' or sheetName == 'Sisterhood Secondary': # sisterhood sheet coloring
-                    if sisterhoodCol1 is not None:
-                        sisterhood1Cell = row[sisterhoodCol1]
-                        #houseTourCell = row[houseToursCol]
-                        isSisterhoodEmpty = sisterhood1Cell.value is None or sisterhood1Cell.value == ''
-                        #isHouseTourEmpty = houseTourCell.value is None or houseTourCell.value == ''
+                    if sisterhoodCol is not None:
+                        sisterhoodCell = row[sisterhoodCol]
+                        isSisterhoodEmpty = sisterhoodCell.value is None or sisterhoodCell.value == ''
 
-                        if isSisterhoodEmpty: # not actually needed but dont want to retest
+                        if isSisterhoodEmpty: 
                             for cell in row: cell.fill = redFill
-                        #elif isAPhiEmpty or isHouseTourEmpty:
-                        #    for cell in row: cell.fill = purpleFill
+                        else:
+                            if score >= 8:
+                                for cell in row: cell.fill = greenFill
+                            elif 6 <= score < 8:
+                                for cell in row: cell.fill = lightGreenFill
+                            elif score < 6:
+                                for cell in row: cell.fill = yellowFill
+                    
+                if sheetName == 'Philanthropy Primary' or sheetName == 'Philanthropy Secondary': # philo sheet coloring
+                    if philoCol is not None:
+                        philoCell = row[philoCol]
+                        isPhiloEmpty = philoCell.value is None or philoCell.value == ''
+
+                        if isPhiloEmpty: 
+                            for cell in row: cell.fill = redFill
                         else:
                             if score >= 8:
                                 for cell in row: cell.fill = greenFill
@@ -132,15 +140,7 @@ with pd.ExcelWriter('sisterhoodRound.xlsx', engine='openpyxl') as writer: # CHAN
                             elif score < 6:
                                 for cell in row: cell.fill = yellowFill
 
-                    else: # pretty sure not needed?
-                        if score >= 8:
-                            for cell in row: cell.fill = greenFill
-                        elif 6 <= score < 8:
-                            for cell in row: cell.fill = lightGreenFill
-                        elif score < 6:
-                            for cell in row: cell.fill = yellowFill
-
-                if sheetName == 'All Girls MasterList' or sheetName == 'Primary MasterList' or sheetName == 'Secondary MasterList': # masterlist coloring
+                if sheetName == 'All Girls MasterList': # masterlist coloring
                     if score >= 8:
                         for cell in row: cell.fill = greenFill
                     elif 6 <= score < 8:
