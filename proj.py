@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 from openpyxl.styles import PatternFill
 
-tabulationSheetOne = pd.read_csv('results_report (15).csv')
-philoComments = pd.read_csv('raw_scores_report (15).csv')
+tabulationSheetOne = pd.read_csv('results_report (16).csv')
+philoComments = pd.read_csv('raw_scores_report (16).csv')
 sisterhoodComments = pd.read_csv('raw_scores_report (12).csv')
 tabulationSheetOne.columns = tabulationSheetOne.columns.str.strip()
 tabulationSheetOneFixed = tabulationSheetOne.drop('List', axis=1, errors='ignore')
@@ -27,11 +27,12 @@ def processComments(df, prefix):
 
     return pivot.reset_index()
 
-sisterhoodCommentPivot = processComments(sisterhoodComments, 'Sis')
-philoCommentPivot = processComments(philoComments, 'Philo')
+sisterhoodCommentPivot = processComments(sisterhoodComments, 'Sisterhood')
+philoCommentPivot = processComments(philoComments, 'Philanthropy')
+chapterCommentPivot = processComments(philoComments, 'Chapter Tours')
 
-columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy', 'Pool']
-columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy']
+columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy', 'Chapter Tours', 'Pool']
+columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy', 'Chapter Tours']
 
 existingColumnsToKeep = [col for col in columnsToKeep if col in tabulationSheetOneFixed.columns]
 newSheet = tabulationSheetOneFixed[existingColumnsToKeep].copy()
@@ -66,20 +67,27 @@ mergedSheet = pd.merge(
     how='left'
 )
 
+mergedSheet = pd.merge(
+    mergedSheet,
+    chapterCommentPivot,
+    on=keyColumns,
+    how='left'
+)
+
 philanthropyPrimary = pd.DataFrame()
 philantrhopySecondary = pd.DataFrame()
 
 if 'Philanthropy' in mergedSheet.columns and 'Sisterhood' in mergedSheet.columns and 'Pool' in mergedSheet.columns:
-    philanthropyAll = mergedSheet[(mergedSheet['Philanthropy'].notna()) & (mergedSheet['Sisterhood'].notna())].copy()
+    philanthropyAll = mergedSheet[(mergedSheet['Philanthropy'].notna()) & (mergedSheet['Sisterhood'].notna()) & (mergedSheet['Sisterhood'].notna())].copy()
     philanthropyPrimary = philanthropyAll[philanthropyAll['Pool']== 'Primary'].copy()
     philanthropySecondary = philanthropyAll[philanthropyAll['Pool']== 'Secondary'].copy()
 
 with pd.ExcelWriter('Scores.xlsx', engine='openpyxl') as writer: # CHANGE BASED ON ROUND
     newSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
     if not philanthropyPrimary.empty:
-        philanthropyPrimary.to_excel(writer, sheet_name='Philanthropy Primary', index=False)
+        philanthropyPrimary.to_excel(writer, sheet_name='Primary', index=False)
     if not philanthropySecondary.empty:
-        philanthropySecondary.to_excel(writer, sheet_name='Philanthropy Secondary', index=False)
+        philanthropySecondary.to_excel(writer, sheet_name='Secondary', index=False)
 
     workbook = writer.book
     greenFill = PatternFill(start_color='C6EFCE', end_color='C6EFCE', fill_type="solid")
@@ -112,7 +120,7 @@ with pd.ExcelWriter('Scores.xlsx', engine='openpyxl') as writer: # CHANGE BASED 
                     except (ValueError, TypeError):
                         continue
 
-                if sheetName == 'Philanthropy Primary' or sheetName == 'Philanthropy Secondary': # philo sheet coloring
+                if sheetName == 'Primary' or sheetName == 'Secondary': # philo sheet coloring
                     if philoCol is not None:
                         philoCell = row[philoCol]
                         isPhiloEmpty = philoCell.value is None or philoCell.value == ''
@@ -120,9 +128,9 @@ with pd.ExcelWriter('Scores.xlsx', engine='openpyxl') as writer: # CHANGE BASED 
                         if isPhiloEmpty: 
                             for cell in row: cell.fill = redFill
                         else:
-                            if score >= 15:
+                            if score >= 22:
                                 for cell in row: cell.fill = purpleFill
-                            if 8 <= score < 15:
+                            if 8 <= score < 22:
                                 for cell in row: cell.fill = greenFill
                             elif 6 <= score < 8:
                                 for cell in row: cell.fill = lightGreenFill
@@ -130,9 +138,9 @@ with pd.ExcelWriter('Scores.xlsx', engine='openpyxl') as writer: # CHANGE BASED 
                                 for cell in row: cell.fill = yellowFill
 
                 if sheetName == 'All Girls MasterList': # masterlist coloring
-                    if score >= 15:
+                    if score >= 22:
                         for cell in row: cell.fill = purpleFill
-                    if 8 <= score < 15:
+                    if 8 <= score < 22:
                         for cell in row: cell.fill = greenFill
                     elif 6 <= score < 8:
                         for cell in row: cell.fill = lightGreenFill
