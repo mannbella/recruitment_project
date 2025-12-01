@@ -2,9 +2,11 @@ import pandas as pd
 import numpy as np
 from openpyxl.styles import PatternFill
 
-tabulationSheetOne = pd.read_csv('results_report (16).csv')
-philoComments = pd.read_csv('raw_scores_report (16).csv')
+tabulationSheetOne = pd.read_csv('results_report (18).csv')
+philoComments = pd.read_csv('raw_scores_report (17).csv')
 sisterhoodComments = pd.read_csv('raw_scores_report (12).csv')
+toursComments=pd.read_csv('raw_scores_report (19).csv')
+prefComments = pd.read_csv('raw_scores_report (20).csv')
 tabulationSheetOne.columns = tabulationSheetOne.columns.str.strip()
 tabulationSheetOneFixed = tabulationSheetOne.drop('List', axis=1, errors='ignore')
 
@@ -29,10 +31,11 @@ def processComments(df, prefix):
 
 sisterhoodCommentPivot = processComments(sisterhoodComments, 'Sisterhood')
 philoCommentPivot = processComments(philoComments, 'Philanthropy')
-chapterCommentPivot = processComments(philoComments, 'Chapter Tours')
+chapterCommentPivot = processComments(toursComments, 'Chapter Tours')
+prefCommentPivot = processComments(prefComments, 'Pref')
 
-columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy', 'Chapter Tours', 'Pool']
-columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy', 'Chapter Tours']
+columnsToKeep = ['Council ID', 'First Name', 'Last Name', 'Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy', 'Chapter Tours', 'Preference','Pool']
+columnsToRound = ['Overall', 'AOII Interest (0)', 'Ambition (0)', 'Likability (0)', 'Sisterhood', 'Philanthropy', 'Chapter Tours', 'Preference']
 
 existingColumnsToKeep = [col for col in columnsToKeep if col in tabulationSheetOneFixed.columns]
 newSheet = tabulationSheetOneFixed[existingColumnsToKeep].copy()
@@ -74,11 +77,18 @@ mergedSheet = pd.merge(
     how='left'
 )
 
+mergedSheet = pd.merge(
+    mergedSheet,
+    prefCommentPivot,
+    on=keyColumns,
+    how='left'
+)
+
 philanthropyPrimary = pd.DataFrame()
 philantrhopySecondary = pd.DataFrame()
 
 if 'Philanthropy' in mergedSheet.columns and 'Sisterhood' in mergedSheet.columns and 'Pool' in mergedSheet.columns:
-    philanthropyAll = mergedSheet[(mergedSheet['Philanthropy'].notna()) & (mergedSheet['Sisterhood'].notna()) & (mergedSheet['Sisterhood'].notna())].copy()
+    philanthropyAll = mergedSheet[(mergedSheet['Philanthropy'].notna()) & (mergedSheet['Sisterhood'].notna()) & (mergedSheet['Chapter Tours'].notna()) & (mergedSheet['Preference'].notna())].copy()
     philanthropyPrimary = philanthropyAll[philanthropyAll['Pool']== 'Primary'].copy()
     philanthropySecondary = philanthropyAll[philanthropyAll['Pool']== 'Secondary'].copy()
 
