@@ -12,7 +12,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useRouter } from 'next/navigation';
-import { AuthProvider, useAuth } from './AuthContext';
+import { AuthProvider, useAuth } from './authContext';
 import ProtectedRoute from './ProtectedRoute';
 import Login from './Login';
 
