@@ -34,8 +34,8 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    const MASTER_EMAIL: "recruitment.aoii.alpharho@gmail.com"
-    const MASTER_PASSWORD: "Passypass7."
+    const MASTER_EMAIL = "recruitment.aoii.alpharho@gmail.com";
+    const MASTER_PASSWORD = "Passypass7.";
 
     if(email === MASTER_EMAIL && password === MASTER_PASSWORD) {
       await login({email});
