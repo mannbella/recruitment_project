@@ -92,6 +92,49 @@ if 'Philanthropy' in mergedSheet.columns and 'Sisterhood' in mergedSheet.columns
     philanthropyPrimary = philanthropyAll[philanthropyAll['Pool']== 'Primary'].copy()
     philanthropySecondary = philanthropyAll[philanthropyAll['Pool']== 'Secondary'].copy()
 
+def randomNames(masterDataFrame):
+    fake = Faker()
+
+    masterNameList = pd.DataFrame()
+    for df in masterDataFrame:
+        if 'First Name' in df.columns and 'Last Name' in df.columns:
+            masterNameList = pd.concat([masterNameList, df[['First Name', 'Last Name']]])
+
+    uniquePeople = masterNameList.drop_duplicates().reset_index(drop=True)
+
+    name_map = {}
+    for index, row in uniquePeople.iterrows():
+        real_key = (row['First Name'], row['Last Name'])
+
+
+        fakeFirst = fake.first_name_female()
+        fakeLast = fake.last_name()
+
+        name_map[real_key] = (fakeFirst, fakeLast)
+
+    for df in masterDataFrame:
+        real_key = (row['First Name'], row['Last Name'])
+
+        in 'First Name' in df.columns and 'Last Name' in df.columns:
+        newFirstNames = []
+        newLastNames = []
+
+        for index, row if df.iterrows():
+            if real_key in name_map:
+                fake_f, fake_l = name_map[real_key]
+                newFirstNames.append(fake_f)
+                newLastNames.append(fake_l)
+            else:
+                newFirstNames.append("Unknown")
+                newLastNames.append("Unknown")
+        
+        df['First Name'] = newFirstNames
+        df['Last Name'] = newLastNames
+
+    print(masterDataFrame[0][['First Name', 'Last Name']].head())
+
+newDataFrame = randomNames(philanthropyAll)
+
 with pd.ExcelWriter('Scores.xlsx', engine='openpyxl') as writer: # CHANGE BASED ON ROUND
     newSheet.to_excel(writer, sheet_name="All Girls MasterList", index=False)
     if not philanthropyPrimary.empty:
