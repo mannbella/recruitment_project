@@ -13,8 +13,8 @@ import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from './authContext';
-import ProtectedRoute from './ProtectedRoute';
-import Login from './Login';
+import ProtectedRoute from './protectedRoute';
+import Login from './login';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
