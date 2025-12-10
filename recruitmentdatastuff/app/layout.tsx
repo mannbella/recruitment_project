@@ -7,8 +7,7 @@
  *
  * Author: Bella Mann
  ***************************************************************/
-// app/layout.tsx
-import './globals.css'; // This keeps your styling working
+import './globals.css';
 
 export default function RootLayout({
   children,
@@ -17,7 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {/* This {children} is where your App.tsx gets injected */}
+        {children}
+      </body>
     </html>
   );
 }
