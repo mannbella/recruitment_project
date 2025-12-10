@@ -1,9 +1,9 @@
 /***************************************************************
- * File: login.tsx
+ * File: layout.tsx
  *
  * Date: 11/30/2025
  *
- * Description: login for website
+ * Description: layout for website
  *
  * Author: Bella Mann
  ***************************************************************/

@@ -1,9 +1,9 @@
 /***************************************************************
- * File: login.tsx
+ * File: authContext.tsx
  *
  * Date: 11/30/2025
  *
- * Description: login for website
+ * Description: authorization for login
  *
  * Author: Bella Mann
  ***************************************************************/
