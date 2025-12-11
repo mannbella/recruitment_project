@@ -56,6 +56,39 @@ const Dashboard: React.FC = () => {
           <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
           <span />
         </label>
+
+        <label> 
+          <label>Philanthropy Data</label>
+          <input type="checkbox" checked={isUploadOn} onChange={(e) => {
+            setIsUploadOn(e.target.checked);
+            if(!e.target.checked)
+              handleClear();
+          }}/>
+          <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
+          <span />
+        </label>
+
+        <label> 
+          <label>House Tours Data</label>
+          <input type="checkbox" checked={isUploadOn} onChange={(e) => {
+            setIsUploadOn(e.target.checked);
+            if(!e.target.checked)
+              handleClear();
+          }}/>
+          <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
+          <span />
+        </label>
+
+        <label> 
+          <label>Preferance Data</label>
+          <input type="checkbox" checked={isUploadOn} onChange={(e) => {
+            setIsUploadOn(e.target.checked);
+            if(!e.target.checked)
+              handleClear();
+          }}/>
+          <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
+          <span />
+        </label>
         
         <br></br>
         <button onClick={handleUpload} disabled={!isUploadOn || !selectedFile}>Upload File</button>
