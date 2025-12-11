@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
   const dataTypes = ["Sisterhood Data", "Philanthropy Data", "House Tours Data", "Preference Data"];
 
   const { user, logout } = useAuth();
-  const [selectedFiles, setSelectedFiles] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState({});
   const [checkedItems, setCheckedItems] = useState<Record<String, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null); 
 
@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
         </div>
         
         <br></br>
-        <button onClick={handleUpload} disabled={Object?.keys(selectedFiles).length === 0}>Upload All Files</button>
+        <button onClick={handleUpload} disabled={!selectedFiles || Object.keys(selectedFiles).length === 0}>Upload All Files</button>
         {selectedFiles && (<button onClick={handleClear}>Clear</button>)}
         {selectedFiles && <p>Selected: {selectedFiles?.name}</p>}
         <button onClick={logout}>Logout</button>
