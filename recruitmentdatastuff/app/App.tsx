@@ -74,6 +74,7 @@ const Dashboard: React.FC = () => {
                 {/* CHECKBOX */}
                 <input 
                   type="checkbox" 
+                  ref={fileInputRef} // HAVEN'T CHECKED IF THIS WORKS YET
                   checked={!!checkedItems[category]} 
                   onChange={() => handleCheckboxChange(category)}
                   className="w-5 h-5"
