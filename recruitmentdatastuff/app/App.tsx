@@ -46,18 +46,15 @@ const Dashboard: React.FC = () => {
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <h1>Welcome, {user?.email}</h1>
         
-        <span>Enable Uploads:</span>
         <label>
           <input type="checkbox" checked={isUploadOn} onChange={(e) => {
             setIsUploadOn(e.target.checked);
             if(!e.target.checked)
               handleClear();
-          }}/>
+          }}>Sisterhood Excel Sheet Upload</input> <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
         <span />
         </label>
         
-        <h3>Upload Data</h3>
-        <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
         <br></br>
         <button onClick={handleUpload} disabled={!isUploadOn || !selectedFile}>Upload File</button>
         {selectedFile && isUploadOn && (<button onClick={handleClear}>Clear</button>)}
