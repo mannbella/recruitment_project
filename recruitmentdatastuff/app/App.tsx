@@ -39,7 +39,7 @@ const Dashboard: React.FC = () => {
         <h1>Welcome, {user?.email}</h1>
         <input type="file" onChange={handleFileSelection}/>
         <br></br>
-        <button onClick={handleUPload}>Upload File</button>
+        <button onClick={handleUpload}>Upload File</button>
         {selectedFile && <p>Selected: {selectedFile.name}</p>}
         <button onClick={logout}>Logout</button>
       </main>
