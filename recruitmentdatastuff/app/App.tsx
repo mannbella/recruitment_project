@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Show selected file name if exists */}
-              {selectedFiles[category] && (
+              {selectedFiles?.[category] && (
                 <p className="text-sm text-green-600">
                   Ready to upload: {selectedFiles[category]?.name}
                 </p>
