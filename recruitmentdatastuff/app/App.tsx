@@ -25,7 +25,9 @@ const Dashboard: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null); 
 
   const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if(event.target.files && event.target.files.length >0 )
+    const files = event.target?.files;
+    
+    if(files && files.length >0 )
       setSelectedFiles(event.target.files[0])
   };
 
