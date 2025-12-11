@@ -37,7 +37,6 @@ const Dashboard: React.FC = () => {
   //     alert(`File "${selectedFile.name}" selected for upload!`);
   //   else
   //     alert("please select a file first");
-  }
 
 
   return(
