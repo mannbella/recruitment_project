@@ -17,8 +17,11 @@ import ProtectedRoute from './protectedRoute';
 import Login from './login';
 
 const Dashboard: React.FC = () => {
+  const dataTypes = ["Sisterhood Data", "Philanthropy Data", "House Tours Data", "Preference Data"];
+
   const { user, logout } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [checkedItems, setCheckedItems] = useState<Record<String, boolean>>({});
   const [isUploadOn, setIsUploadOn] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null); 
 
@@ -41,57 +44,62 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const handleCheckboxChange = (category: string) => {
+    setCheckedItems(prev => {
+      const newState = {...prev, [category]: !prev[category]};
+      if(!newState[category]) {
+        setSelectedFiles(prevFiles => {
+          const newFiles = { ...prevFIles};
+          delete newFiles[category];
+          return newFiles;
+        });
+      }
+      return newState;
+    });
+  };
+
   return(
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <h1>Welcome, {user?.email}</h1>
         
-        <label> 
-          <label>Sisterhood Data</label>
-          <input type="checkbox" checked={isUploadOn} onChange={(e) => {
-            setIsUploadOn(e.target.checked);
-            if(!e.target.checked)
-              handleClear();
-          }}/>
-          <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
-          <span />
-        </label>
+        <div className="flex flex-col gap-6 w-full">
+          {/* 4. Map over the list to generate independent sections */}
+          {dataTypes.map((category) => (
+            <label key={category} className="flex flex-col gap-2 p-4 border rounded shadow-sm">
+              <span className="font-bold">{category}</span>
+              
+              <div className="flex items-center gap-4">
+                {/* CHECKBOX */}
+                <input 
+                  type="checkbox" 
+                  checked={!!checkedItems[category]} 
+                  onChange={() => handleCheckboxChange(category)}
+                  className="w-5 h-5"
+                />
+                
+                {/* FILE INPUT */}
+                <input 
+                  type="file" 
+                  disabled={!checkedItems[category]} 
+                  onChange={(e) => handleFileChange(category, e)}
+                  // Use 'key' to reset input when unchecked (clears the browser text)
+                  key={checkedItems[category] ? "active" : "disabled"}
+                />
+              </div>
 
-        <label> 
-          <label>Philanthropy Data</label>
-          <input type="checkbox" checked={isUploadOn} onChange={(e) => {
-            setIsUploadOn(e.target.checked);
-            if(!e.target.checked)
-              handleClear();
-          }}/>
-          <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
-          <span />
-        </label>
-
-        <label> 
-          <label>House Tours Data</label>
-          <input type="checkbox" checked={isUploadOn} onChange={(e) => {
-            setIsUploadOn(e.target.checked);
-            if(!e.target.checked)
-              handleClear();
-          }}/>
-          <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
-          <span />
-        </label>
-
-        <label> 
-          <label>Preferance Data</label>
-          <input type="checkbox" checked={isUploadOn} onChange={(e) => {
-            setIsUploadOn(e.target.checked);
-            if(!e.target.checked)
-              handleClear();
-          }}/>
-          <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
-          <span />
-        </label>
+              {/* Show selected file name if exists */}
+              {selectedFiles[category] && (
+                <p className="text-sm text-green-600">
+                  Ready to upload: {selectedFiles[category]?.name}
+                </p>
+              )}
+            </label>
+          ))}
+        </div>
         
         <br></br>
-        <button onClick={handleUpload} disabled={!isUploadOn || !selectedFile}>Upload File</button>
+        <button onClick={handleUpload} disabled={Object.keys(selectedFiles).length === 0}>Upload All Files</button>
         {selectedFile && isUploadOn && (<button onClick={handleClear}>Clear</button>)}
         {selectedFile && <p>Selected: {selectedFile?.name}</p>}
         <button onClick={logout}>Logout</button>
