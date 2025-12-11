@@ -51,7 +51,8 @@ const Dashboard: React.FC = () => {
             setIsUploadOn(e.target.checked);
             if(!e.target.checked)
               handleClear();
-          }}>Sisterhood Excel Sheet Upload</input> <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
+          }}>Sisterhood Excel Sheet Upload</input>
+          <input type="file" onChange={handleFileSelection} ref={fileInputRef} disabled={!isUploadOn}/>
         <span />
         </label>
         
