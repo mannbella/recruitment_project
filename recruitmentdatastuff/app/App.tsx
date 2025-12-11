@@ -32,7 +32,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleClear = () => {
-    setSelectedFiles(null);
+    setSelectedFiles({});
     if(fileInputRef.current)
       fileInputRef.current.value = '';
   };
@@ -82,6 +82,7 @@ const Dashboard: React.FC = () => {
                 {/* FILE INPUT */}
                 <input 
                   type="file" 
+                  ref={fileInputRef}
                   disabled={!checkedItems[category]} 
                   onChange={(e) => handleFileSelection(category, e)}
                   // Use 'key' to reset input when unchecked (clears the browser text)
