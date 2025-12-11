@@ -19,17 +19,24 @@ import Login from './login';
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null); 
 
   const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
     if(event.target.files && event.target.files.length >0 )
       setSelectedFile(event.target.files[0])
   };
 
-  const handleUpload = () => {
-    if(selectedFile)
-      alert(`File "${selectedFile.name}" selected for upload!`);
-    else
-      alert("please select a file first");
+  const handleClear = () => {
+    setSelectedFile(null);
+    if(fileInputRef.current)
+      fileInputRef.current.value = '';
+  };
+
+  // const handleUpload = () => {
+  //   if(selectedFile)
+  //     alert(`File "${selectedFile.name}" selected for upload!`);
+  //   else
+  //     alert("please select a file first");
   }
 
 
@@ -39,7 +46,7 @@ const Dashboard: React.FC = () => {
         <h1>Welcome, {user?.email}</h1>
         <input type="file" onChange={handleFileSelection}/>
         <br></br>
-        <button onClick={handleUpload}>Upload File</button>
+        {selectedFile && (<button onClick={handleClear}>Clear</button>)}
         {selectedFile && <p>Selected: {selectedFile.name}</p>}
         <button onClick={logout}>Logout</button>
       </main>
