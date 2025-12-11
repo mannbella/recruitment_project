@@ -46,7 +46,7 @@ const Dashboard: React.FC = () => {
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <h1>Welcome, {user?.email}</h1>
         
-        <label>
+        <label> Sisterhood Data
           <input type="checkbox" checked={isUploadOn} onChange={(e) => {
             setIsUploadOn(e.target.checked);
             if(!e.target.checked)
