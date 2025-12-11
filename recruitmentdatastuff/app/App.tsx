@@ -19,7 +19,7 @@ import Login from './login';
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUPloadOn, setIsUploadOn] = useState(false);
+  const [isUploadOn, setIsUploadOn] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null); 
 
   const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
