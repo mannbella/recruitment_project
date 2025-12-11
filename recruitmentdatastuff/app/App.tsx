@@ -98,7 +98,7 @@ const Dashboard: React.FC = () => {
         </div>
         
         <br></br>
-        <button onClick={handleUpload} disabled={Object.keys(selectedFiles).length === 0}>Upload All Files</button>
+        <button onClick={handleUpload} disabled={Object?.keys(selectedFiles).length === 0}>Upload All Files</button>
         {selectedFiles && (<button onClick={handleClear}>Clear</button>)}
         {selectedFiles && <p>Selected: {selectedFiles?.name}</p>}
         <button onClick={logout}>Logout</button>
