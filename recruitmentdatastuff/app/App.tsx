@@ -20,25 +20,24 @@ const Dashboard: React.FC = () => {
   const dataTypes = ["Sisterhood Data", "Philanthropy Data", "House Tours Data", "Preference Data"];
 
   const { user, logout } = useAuth();
-  const [selectedFiles, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File | null>(null);
   const [checkedItems, setCheckedItems] = useState<Record<String, boolean>>({});
-  const [isUploadOn, setIsUploadOn] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null); 
 
   const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
     if(event.target.files && event.target.files.length >0 )
-      setSelectedFile(event.target.files[0])
+      setSelectedFiles(event.target.files[0])
   };
 
   const handleClear = () => {
-    setSelectedFile(null);
+    setSelectedFiles(null);
     if(fileInputRef.current)
       fileInputRef.current.value = '';
   };
 
   const handleUpload = () => {
-    if (selectedFile) {
-      alert(`File "${selectedFile.name}" uploading...`);
+    if (selectedFiles) {
+      alert(`File "${selectedFiles.name}" uploading...`);
     } else {
       alert("Please select a file first.");
     }
@@ -49,7 +48,7 @@ const Dashboard: React.FC = () => {
       const newState = {...prev, [category]: !prev[category]};
       if(!newState[category]) {
         setSelectedFiles(prevFiles => {
-          const newFiles = { ...prevFIles};
+          const newFiles = { ...prevFiles};
           delete newFiles[category];
           return newFiles;
         });
@@ -82,7 +81,7 @@ const Dashboard: React.FC = () => {
                 <input 
                   type="file" 
                   disabled={!checkedItems[category]} 
-                  onChange={(e) => handleFileChange(category, e)}
+                  onChange={(e) => handleFileSelection(category, e)}
                   // Use 'key' to reset input when unchecked (clears the browser text)
                   key={checkedItems[category] ? "active" : "disabled"}
                 />
@@ -100,8 +99,8 @@ const Dashboard: React.FC = () => {
         
         <br></br>
         <button onClick={handleUpload} disabled={Object.keys(selectedFiles).length === 0}>Upload All Files</button>
-        {selectedFile && isUploadOn && (<button onClick={handleClear}>Clear</button>)}
-        {selectedFile && <p>Selected: {selectedFile?.name}</p>}
+        {selectedFiles && (<button onClick={handleClear}>Clear</button>)}
+        {selectedFiles && <p>Selected: {selectedFiles?.name}</p>}
         <button onClick={logout}>Logout</button>
       </main>
     </div>
