@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
   const dataTypes = ["Sisterhood Data", "Philanthropy Data", "House Tours Data", "Preference Data"];
 
   const { user, logout } = useAuth();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFile] = useState<File | null>(null);
   const [checkedItems, setCheckedItems] = useState<Record<String, boolean>>({});
   const [isUploadOn, setIsUploadOn] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null); 
