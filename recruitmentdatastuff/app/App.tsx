@@ -32,21 +32,14 @@ const Dashboard: React.FC = () => {
       fileInputRef.current.value = '';
   };
 
-  // const handleUpload = () => {
-  //   if(selectedFile)
-  //     alert(`File "${selectedFile.name}" selected for upload!`);
-  //   else
-  //     alert("please select a file first");
-
-
   return(
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <h1>Welcome, {user?.email}</h1>
-        <input type="file" onChange={handleFileSelection}/>
+        <input type="file" onChange={handleFileSelection} ref={fileInputRef}/>
         <br></br>
         {selectedFile && (<button onClick={handleClear}>Clear</button>)}
-        {selectedFile && <p>Selected: {selectedFile.name}</p>}
+        {selectedFile && <p>Selected: {selectedFile?.name}</p>}
         <button onClick={logout}>Logout</button>
       </main>
     </div>
